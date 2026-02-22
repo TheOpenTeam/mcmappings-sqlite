@@ -6,7 +6,13 @@
  *  * Copyright (c) 2026 The Open Team. All rights reserved.
  *
  */
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
+#[derive(Clone, ValueEnum)]
+pub enum MappingType {
+    Vanilla,
+    Fabric,
+    MCP,
+}
 #[derive(Parser)]
 #[command(name = "mcmappings-sqlite")]
 pub(crate) struct Cli {
@@ -15,8 +21,17 @@ pub(crate) struct Cli {
 }
 #[derive(Subcommand)]
 pub(crate) enum Commands {
+    #[command(about = "Create a new mappings database")]
     Create {
         #[arg(default_value = "mappings.db")]
         path: String
     },
+    #[command(about = "Append vanilla mappings to a database")]
+    Append {
+        #[arg(short, long)]
+        inputs : Vec<String>,
+        #[arg(short, long, default_value = "mappings.db")]
+        db: String,
+        
+    }
 }
