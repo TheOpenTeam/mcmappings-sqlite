@@ -39,9 +39,9 @@ pub fn process_proguard(path: &str, db: &str, version: &str) -> anyhow::Result<(
             // 不以空格开头则为类
             line if !line.starts_with(" ") => {
                 state = State::Class;
-                let class = line.trim().split("->").collect::<Vec<&str>>();
-                current_class_obfuscated = Some(class[0].to_string().replace(":", ""));
-                current_class_original = Some(class[1].to_string());
+                let class = line.trim().split(" ").collect::<Vec<&str>>();
+                current_class_obfuscated = Some(class[2].replace(":", ""));
+                current_class_original = Some(class[0].to_string());
                 conn.execute("INSERT INTO vanilla_classes (version, original, obfuscated) VALUES (?1, ?2, ?3)", (version, &current_class_original, &current_class_obfuscated))?;
                 current_class_id = conn.last_insert_rowid();
                 info!("Processed class(ID: {}), : {:?} ->  {:?}", current_class_id, current_class_original, current_class_obfuscated);
@@ -53,13 +53,13 @@ pub fn process_proguard(path: &str, db: &str, version: &str) -> anyhow::Result<(
                 let content = &line[4..];
                 match content {
                     // 字段
-                    content if !content.contains("()") => {
+                    content if !content.contains("(") => {
                         let field = content.split(" ").collect::<Vec<&str>>();
                         let original = field[1];
-                        let obfuscated = field[2].replace("-> ", "");
+                        let obfuscated = field[3];
                         let field_type = field[0];
                         conn.execute("INSERT INTO vanilla_fields (class_id, original, obfuscated, field_type) VALUES (?1, ?2, ?3, ?4)", (current_class_id, &original, &obfuscated, &field_type))?;
-                        info!("Processed field: {:?} ->  {:?}", original, obfuscated);
+                        info!("Processed field: {} ->  {}", original, obfuscated);
                     },
                     _ => {println!("{}", line)}
                 }
