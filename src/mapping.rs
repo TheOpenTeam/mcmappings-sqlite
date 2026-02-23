@@ -8,6 +8,7 @@
  */
 use clap::ValueEnum;
 use std::{fs, fs::File, path};
+use std::time::Instant;
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
@@ -27,9 +28,14 @@ pub(crate) fn append_mappings(inputs: Vec<String>, path: &str, version: &str) ->
     if !Path::new(path).exists() {
         create_empty_db(path)?;
     }
+    let mut line_len = 0;
+    info!("Start processing mappings...");
+    let start = Instant::now();
     for input in inputs {
-        process_proguard(&input, path, version)?;
+        line_len += process_proguard(&input, path, version)?;
     }
+    let duration = start.elapsed().as_secs_f64();
+    info!("Finished processing mappings in {:?}s, speed: {:.2} lines/s", duration, line_len as f64 / duration);
     Ok(())
 }
 

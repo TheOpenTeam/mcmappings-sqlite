@@ -33,15 +33,14 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS vanilla_methods (
             method_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            class_id INTEGER NOT NULL,
+            class_id INTEGER,
+            source_file TEXT,
             original TEXT NOT NULL,
             obfuscated TEXT NOT NULL,
             return_type TEXT NOT NULL,
             parameter_types TEXT,
-            start_line INTEGER NOT NULL,
-            end_line INTEGER NOT NULL,
             FOREIGN KEY(class_id) REFERENCES vanilla_classes(class_id) ON DELETE CASCADE
-        )", // parameter_types存的是json
+        )", // parameter_types存的是json，对于某些“顶级方法”，无classid而有source_file
         [],
     )?;
 
