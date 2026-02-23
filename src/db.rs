@@ -17,6 +17,7 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
         fs::remove_file(path)?;
     }
     let conn = Connection::open(path)?;
+    conn.execute("PRAGMA foreign_keys = ON", [])?;
     info!("Creating an empty database...");
     // vanilla
     conn.execute(
@@ -33,13 +34,14 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
         "CREATE TABLE IF NOT EXISTS vanilla_methods (
             method_id INTEGER PRIMARY KEY AUTOINCREMENT,
             class_id INTEGER NOT NULL,
-            readable_method TEXT NOT NULL,
-            obf_method TEXT NOT NULL,
-            descriptor TEXT NOT NULL,
-            start_line INTEGER,
-            end_line INTEGER,
-            FOREIGN KEY(class_id) REFERENCES vanilla_classes(id) ON DELETE CASCADE
-        )",
+            original TEXT NOT NULL,
+            obfuscated TEXT NOT NULL,
+            return_type TEXT NOT NULL,
+            parameter_types TEXT,
+            start_line INTEGER NOT NULL,
+            end_line INTEGER NOT NULL,
+            FOREIGN KEY(class_id) REFERENCES vanilla_classes(class_id) ON DELETE CASCADE
+        )", // parameter_types存的是json
         [],
     )?;
 
@@ -49,8 +51,8 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
             class_id INTEGER NOT NULL,
             original TEXT NOT NULL,
             obfuscated TEXT NOT NULL,
-            field_type TEXT
-
+            field_type TEXT,
+            FOREIGN KEY(class_id) REFERENCES vanilla_classes(class_id) ON DELETE CASCADE
         )",
         [],
     )?;
@@ -89,7 +91,7 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
             intermediary_field TEXT NOT NULL,
             obf_field TEXT NOT NULL,
             field_type TEXT,
-            FOREIGN KEY(class_id) REFERENCES fabric_classes(id) ON DELETE CASCADE
+            FOREIGN KEY(class_id) REFERENCES fabric_classes(class_id) ON DELETE CASCADE
         )",
         [],
     )?;
@@ -135,7 +137,7 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
 
     // 索引
     conn.execute("CREATE INDEX IF NOT EXISTS idx_vanilla_classes_obf ON vanilla_classes(obfuscated)", [])?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_vanilla_methods_obf ON vanilla_methods(obf_method)", [])?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_vanilla_methods_obf ON vanilla_methods(obfuscated)", [])?;
 
     conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_classes_obf ON fabric_classes(obf_class)", [])?;
     conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_methods_obf ON fabric_methods(obf_method)", [])?;
