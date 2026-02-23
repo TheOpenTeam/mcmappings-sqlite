@@ -21,17 +21,17 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
     // vanilla
     conn.execute(
         "CREATE TABLE IF NOT EXISTS vanilla_classes (
-            id INTEGER PRIMARY KEY,
+            class_id INTEGER PRIMARY KEY AUTOINCREMENT,
             version TEXT NOT NULL,
             original TEXT NOT NULL,
-            obf_class TEXT NOT NULL,
+            obfuscated TEXT NOT NULL
         )",
         [],
     )?;
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS vanilla_methods (
-            id INTEGER PRIMARY KEY,
+            method_id INTEGER PRIMARY KEY AUTOINCREMENT,
             class_id INTEGER NOT NULL,
             readable_method TEXT NOT NULL,
             obf_method TEXT NOT NULL,
@@ -45,12 +45,12 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS vanilla_fields (
-            id INTEGER PRIMARY KEY,
+            field_id INTEGER PRIMARY KEY AUTOINCREMENT,
             class_id INTEGER NOT NULL,
-            readable_field TEXT NOT NULL,
-            obf_field TEXT NOT NULL,
-            field_type TEXT,
-            FOREIGN KEY(class_id) REFERENCES vanilla_classes(id) ON DELETE CASCADE
+            original TEXT NOT NULL,
+            obfuscated TEXT NOT NULL,
+            field_type TEXT
+
         )",
         [],
     )?;
@@ -134,7 +134,7 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
     )?;
 
     // 索引
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_vanilla_classes_obf ON vanilla_classes(obf_class)", [])?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_vanilla_classes_obf ON vanilla_classes(obfuscated)", [])?;
     conn.execute("CREATE INDEX IF NOT EXISTS idx_vanilla_methods_obf ON vanilla_methods(obf_method)", [])?;
 
     conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_classes_obf ON fabric_classes(obf_class)", [])?;

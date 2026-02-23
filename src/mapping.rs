@@ -12,10 +12,9 @@ use std::collections::HashMap;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use log::info;
-use proguard::{ProguardMapper, ProguardMapping, ProguardRecord, ProguardRecordIter};
 use rusqlite::{Connection, params};
 use crate::db::create_empty_db;
-
+use crate::resolvers::proguard::process_proguard;
 
 #[derive(Clone, ValueEnum)]
 pub enum MappingType {
@@ -28,9 +27,10 @@ pub(crate) fn append_mappings(inputs: Vec<String>, path: &str, version: &str) ->
     if !Path::new(path).exists() {
         create_empty_db(path)?;
     }
-
-    let conn = Connection::open(path)?;
-    
+    for input in inputs {
+        process_proguard(&input, path, version)?;
+    }
+    Ok(())
 }
 
 
