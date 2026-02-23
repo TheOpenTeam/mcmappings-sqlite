@@ -23,9 +23,8 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
         "CREATE TABLE IF NOT EXISTS vanilla_classes (
             id INTEGER PRIMARY KEY,
             version TEXT NOT NULL,
-            readable_class TEXT NOT NULL,
+            original TEXT NOT NULL,
             obf_class TEXT NOT NULL,
-            source_file TEXT
         )",
         [],
     )?;

@@ -9,6 +9,7 @@
 pub mod command;
 pub mod db;
 pub mod mapping;
+pub mod resolvers;
 
 use clap::Parser;
 use log::{info, warn};
@@ -21,7 +22,7 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     match cli.command {
         Commands::Create {path} => create_empty_db(&path)?,
-        Commands::Append {inputs, db} => append_mappings(&inputs, &db)?,
+        Commands::Append {inputs, db, version} => append_mappings(inputs, &db, &version)?,
     }
     Ok(())
 }
