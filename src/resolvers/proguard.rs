@@ -77,7 +77,7 @@ pub fn process_proguard(path: &str, db: &str, version: &str) -> anyhow::Result<(
                         let field_type = field[0];
                         //conn.execute("INSERT OR REPLACE INTO vanilla_fields (class_id, original, obfuscated, field_type) VALUES (?1, ?2, ?3, ?4)", (current_class_id, &original, &obfuscated, &field_type))?;
                         field_pre.execute((current_class_id, &original, &obfuscated, &field_type))?;
-                        info!("Processed {} field(ID: {}): {} ->  {}", field_type, conn.last_insert_rowid(), original, obfuscated);
+                        info!("Processed field(ID: {}): {} ->  {}", conn.last_insert_rowid(), original, obfuscated);
                     },
                     // 方法
                     content if content.contains("(") => {

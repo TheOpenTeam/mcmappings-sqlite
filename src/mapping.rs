@@ -35,7 +35,7 @@ pub(crate) fn append_mappings(inputs: Vec<String>, path: &str, version: &str) ->
         line_len += process_proguard(&input, path, version)?;
     }
     let duration = start.elapsed().as_secs_f64();
-    info!("Finished processing mappings in {:?}s, speed: {:.2} lines/s", duration, line_len as f64 / duration);
+    info!("Finished processing mappings in {:?}s\ntotal lines: {}\nspeed: {:.2} lines/s", duration, line_len, line_len as f64 / duration);
     Ok(())
 }
 
