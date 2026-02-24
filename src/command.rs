@@ -29,6 +29,7 @@ pub(crate) enum Commands {
         db: String,
         #[arg(short, long)]
         version: String,
-        
+        #[arg(short, long, default_value_t = false)]
+        debug: bool,
     }
 }

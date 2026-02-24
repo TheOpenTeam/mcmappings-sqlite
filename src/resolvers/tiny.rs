@@ -7,7 +7,7 @@
  *
  */
 use std::fs;
-use log::{error, info};
+use log::{debug, error};
 use rusqlite::Connection;
 pub fn process_tiny(input: &str, db: &str, version: &str) -> anyhow::Result<(usize)> {
     // 判断tiny版本
@@ -62,7 +62,7 @@ fn process_tiny_v1(input: &str, db: &str, version: &str) -> anyhow::Result<(usiz
                 class_pre.execute((version, official, named, intermediary))?;
                 let id = conn.last_insert_rowid();
                 state = Some(id);
-                info!("Processed class(Tiny v1, ID:{}) {} -> {} -> {}", id, official, named, intermediary);
+                debug!("Processed class(Tiny v1, ID:{}) {} -> {} -> {}", id, official, named, intermediary);
             }
             "METHOD" => {
                 if let Some(id) = state {
@@ -72,7 +72,7 @@ fn process_tiny_v1(input: &str, db: &str, version: &str) -> anyhow::Result<(usiz
                     let intermediary = split[intermediary_index + 2];
                     let named = split[named_index + 2];
                     method_pre.execute((id, parent_class, desc, official, named, intermediary))?;
-                    info!("Processed method(Tiny v1, ID:{}) {} -> {} -> {}", conn.last_insert_rowid(), official, named, intermediary);
+                    debug!("Processed method(Tiny v1, ID:{}) {} -> {} -> {}", conn.last_insert_rowid(), official, named, intermediary);
                 }
             }
             "FIELD" => {
@@ -83,7 +83,7 @@ fn process_tiny_v1(input: &str, db: &str, version: &str) -> anyhow::Result<(usiz
                     let intermediary = split[intermediary_index + 2];
                     let named = split[named_index + 2];
                     field_pre.execute((id, parent_class, field_type, official, named, intermediary))?;
-                    info!("Processed field(Tiny v1, ID:{}) {} -> {} -> {}", conn.last_insert_rowid(), official, named, intermediary);
+                    debug!("Processed field(Tiny v1, ID:{}) {} -> {} -> {}", conn.last_insert_rowid(), official, named, intermediary);
                 }
             }
             &_ => error!("Unknown line type {}", line)

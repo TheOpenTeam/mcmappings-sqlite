@@ -12,7 +12,7 @@ use std::time::Instant;
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-use log::info;
+use log::{info, warn};
 use rusqlite::{Connection, params};
 use crate::db::create_empty_db;
 use crate::resolvers::proguard::process_proguard;
@@ -40,7 +40,7 @@ pub(crate) fn append_mappings(inputs: Vec<String>, path: &str, version: &str) ->
         }
     }
     let duration = start.elapsed().as_secs_f64();
-    info!("Finished processing mappings in {:?}s\ntotal lines: {}\nspeed: {:.2} lines/s", duration, line_len, line_len as f64 / duration);
+    warn!("Finished processing mappings in {:?}s\ntotal lines: {}\nspeed: {:.2} lines/s", duration, line_len, line_len as f64 / duration);
     Ok(())
 }
 

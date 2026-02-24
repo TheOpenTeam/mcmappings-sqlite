@@ -8,7 +8,7 @@
  */
 use std::cmp::PartialEq;
 use std::fs;
-use log::{error, info};
+use log::{debug, error};
 use rusqlite::Connection;
 use serde_json::Value;
 
@@ -53,7 +53,7 @@ pub fn process_proguard(path: &str, db: &str, version: &str) -> anyhow::Result<u
                 //conn.execute("INSERT OR REPLACE INTO vanilla_classes (version, original, obfuscated) VALUES (?1, ?2, ?3)", (version, &current_class_original, &current_class_obfuscated))?;
                 class_pre.execute((version, &current_class_original, &current_class_obfuscated))?;
                 current_class_id = conn.last_insert_rowid();
-                info!("Processed class(ID: {}), : {} ->  {}", current_class_id, current_class_original, current_class_obfuscated);
+                debug!("Processed class(ID: {}), : {} ->  {}", current_class_id, current_class_original, current_class_obfuscated);
             }
             // 元数据，标记状态
             line if line.starts_with("#") => {
@@ -77,7 +77,7 @@ pub fn process_proguard(path: &str, db: &str, version: &str) -> anyhow::Result<u
                         let field_type = field[0];
                         //conn.execute("INSERT OR REPLACE INTO vanilla_fields (class_id, original, obfuscated, field_type) VALUES (?1, ?2, ?3, ?4)", (current_class_id, &original, &obfuscated, &field_type))?;
                         field_pre.execute((current_class_id, &original, &obfuscated, &field_type))?;
-                        info!("Processed field(ID: {}): {} ->  {}", conn.last_insert_rowid(), original, obfuscated);
+                        debug!("Processed field(ID: {}): {} ->  {}", conn.last_insert_rowid(), original, obfuscated);
                     },
                     // 方法
                     content if content.contains("(") => {
@@ -116,7 +116,7 @@ pub fn process_proguard(path: &str, db: &str, version: &str) -> anyhow::Result<u
                             State::Metadata => {method_meta_pre.execute((src, &original, &obfuscated, &return_type, &parameter_types))?;}//{conn.execute("INSERT OR REPLACE INTO vanilla_methods (source_file, original, obfuscated, return_type, parameter_types) VALUES (?1, ?2, ?3, ?4, ?5)", (src, &original, &obfuscated, &return_type, &parameter_types))?;}
                             State::None => error!("Error state"),
                         }
-                        info!("Processed method(ID: {}): {} ->  {}", conn.last_insert_rowid(), original, obfuscated);
+                        debug!("Processed method(ID: {}): {} ->  {}", conn.last_insert_rowid(), original, obfuscated);
                     }
                     _ => { error!("Error format {}", content); }
                 }

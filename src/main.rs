@@ -12,17 +12,18 @@ pub mod mapping;
 pub mod resolvers;
 
 use clap::Parser;
-use log::{info, warn};
+use log::{info, warn, LevelFilter};
 use crate::command::{Cli, Commands};
 use crate::db::{create_empty_db};
 use crate::mapping::{append_mappings};
 fn main() -> anyhow::Result<()> {
-    unsafe { std::env::set_var("RUST_LOG", "info"); } // 强制所有级别
-    env_logger::init();
     let cli = Cli::parse();
     match cli.command {
-        Commands::Create {path} => create_empty_db(&path)?,
-        Commands::Append {inputs, db, version} => append_mappings(inputs, &db, &version)?,
+        Commands::Create {path} => {env_logger::builder().filter_level(LevelFilter::Info).init(); create_empty_db(&path)?},
+        Commands::Append {inputs, db, version, debug } => {
+            if debug { env_logger::builder().filter_level(LevelFilter::Debug).init(); } else {env_logger::builder().filter_level(LevelFilter::Info).init(); }
+            append_mappings(inputs, &db, &version)?
+        },
     }
     Ok(())
 }
