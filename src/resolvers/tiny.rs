@@ -37,6 +37,8 @@ fn process_tiny_v1(input: &str, db: &str, version: &str) -> anyhow::Result<(usiz
     conn.execute("PRAGMA temp_store = MEMORY", [])?;
     conn.execute("BEGIN TRANSACTION", [])?;
     let mut class_pre = conn.prepare("INSERT OR REPLACE INTO fabric_classes_v1 (version, official, named, intermediary) VALUES (?1, ?2, ?3, ?4)")?;
+    let mut method_pre = conn.prepare("INSERT OR REPLACE INTO fabric_methods_v1 (class_id, parent_class, desc, official, named, intermediary) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")?;
+    let mut field_pre = conn.prepare("INSERT OR REPLACE INTO fabric_fields_v1 (class_id, parent_class, field_type, official, named, intermediary) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")?;
     let mut named_index = 0;
     let mut intermediary_index = 0;
     let mut state: Option<i64> = None; // 存储类ID
@@ -62,8 +64,28 @@ fn process_tiny_v1(input: &str, db: &str, version: &str) -> anyhow::Result<(usiz
                 state = Some(id);
                 info!("Processed class(Tiny v1, ID:{}) {} -> {} -> {}", id, official, named, intermediary);
             }
-            "METHOD" => {}
-            "FIELD" => {}
+            "METHOD" => {
+                if let Some(id) = state {
+                    let parent_class = split[1];
+                    let desc = split[2];
+                    let official = split[3];
+                    let intermediary = split[intermediary_index + 2];
+                    let named = split[named_index + 2];
+                    method_pre.execute((id, parent_class, desc, official, named, intermediary))?;
+                    info!("Processed method(Tiny v1, ID:{}) {} -> {} -> {}", conn.last_insert_rowid(), official, named, intermediary);
+                }
+            }
+            "FIELD" => {
+                if let Some(id) = state {
+                    let parent_class = split[1];
+                    let field_type = split[2];
+                    let official = split[3];
+                    let intermediary = split[intermediary_index + 2];
+                    let named = split[named_index + 2];
+                    field_pre.execute((id, parent_class, field_type, official, named, intermediary))?;
+                    info!("Processed field(Tiny v1, ID:{}) {} -> {} -> {}", conn.last_insert_rowid(), official, named, intermediary);
+                }
+            }
             &_ => error!("Unknown line type {}", line)
 
 

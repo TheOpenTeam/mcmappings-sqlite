@@ -46,7 +46,7 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS vanilla_fields (
-            field_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        field_id INTEGER PRIMARY KEY AUTOINCREMENT,
             class_id INTEGER NOT NULL,
             original TEXT NOT NULL,
             obfuscated TEXT NOT NULL,
@@ -70,26 +70,28 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS fabric_methods_v1 (
-            id INTEGER PRIMARY KEY,
+            method_id INTEGER PRIMARY KEY AUTOINCREMENT,
             class_id INTEGER NOT NULL,
-            readable_method TEXT NOT NULL,
-            intermediary_method TEXT NOT NULL,
-            obf_method TEXT NOT NULL,
-            descriptor TEXT NOT NULL,
-            FOREIGN KEY(class_id) REFERENCES fabric_classes(class_id) ON DELETE CASCADE
+            parent_class TEXT NOT NULL,
+            desc TEXT NOT NULL,
+            official TEXT NOT NULL,
+            named TEXT NOT NULL,
+            intermediary TEXT NOT NULL,
+            FOREIGN KEY(class_id) REFERENCES fabric_classes_v1(class_id) ON DELETE CASCADE
         )",
         [],
     )?;
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS fabric_fields_v1 (
-            id INTEGER PRIMARY KEY,
+            field_id INTEGER PRIMARY KEY AUTOINCREMENT,
             class_id INTEGER NOT NULL,
-            readable_field TEXT NOT NULL,
-            intermediary_field TEXT NOT NULL,
-            obf_field TEXT NOT NULL,
-            field_type TEXT,
-            FOREIGN KEY(class_id) REFERENCES fabric_classes(class_id) ON DELETE CASCADE
+            parent_class TEXT NOT NULL,
+            field_type TEXT NOT NULL,
+            official TEXT NOT NULL,
+            named TEXT NOT NULL,
+            intermediary TEXT NOT NULL,
+            FOREIGN KEY(class_id) REFERENCES fabric_classes_v1(class_id) ON DELETE CASCADE
         )",
         [],
     )?;
@@ -138,7 +140,7 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
     conn.execute("CREATE INDEX IF NOT EXISTS idx_vanilla_methods_obf ON vanilla_methods(obfuscated)", [])?;
 
     conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_classes_v1_obf ON fabric_classes_v1(official)", [])?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_methods_obf ON fabric_methods_v1(obf_method)", [])?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_methods_obf ON fabric_methods_v1(official)", [])?;
     conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_classes_v1_intermediary ON fabric_classes_v1(intermediary)", [])?;
 
     conn.execute("CREATE INDEX IF NOT EXISTS idx_forge_classes_obf ON forge_classes(obf_class)", [])?;
