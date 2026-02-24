@@ -19,7 +19,7 @@ enum State {
     None,
 }
 
-pub fn process_proguard(path: &str, db: &str, version: &str) -> anyhow::Result<(usize)> {
+pub fn process_proguard(path: &str, db: &str, version: &str) -> anyhow::Result<usize> {
 
     let conn = Connection::open(db)?;
     // 优化
@@ -34,7 +34,7 @@ pub fn process_proguard(path: &str, db: &str, version: &str) -> anyhow::Result<(
     let mut field_pre = conn.prepare("INSERT OR REPLACE INTO vanilla_fields (class_id, original, obfuscated, field_type) VALUES (?1, ?2, ?3, ?4)")?;
 
     let file = fs::read_to_string(path)?;
-    let mut lines: Vec<&str> = file.lines().skip(1).collect();
+    let lines: Vec<&str> = file.lines().skip(1).collect();
     let line_len = lines.len();
     let mut current_class_obfuscated: String = String::new();
     let mut current_class_original: String = String::new();
@@ -81,12 +81,36 @@ pub fn process_proguard(path: &str, db: &str, version: &str) -> anyhow::Result<(
                     },
                     // 方法
                     content if content.contains("(") => {
-                        let _parameters = content.split('(').nth(1).and_then(|s| s.split(')').next()).unwrap_or("");
-                        let parameter_types = serde_json::to_string(&_parameters.split(',').map(|p| p.trim()).collect::<Vec<_>>())?;
-                        let original = content.split(' ').nth(1).and_then(|part| part.split('(').next()).unwrap_or("").trim();
-                        let obfuscated = content.split(' ').nth(3).unwrap_or("").trim();
-                        let return_type = content.split(':').nth(2).and_then(|part| part.split(' ').next()).unwrap_or("").trim();
+                        let parts_by_space: Vec<&str> = content.split(' ').collect();
+
+                        // 原名
+                        let original = parts_by_space.get(1)
+                            .and_then(|part| part.split('(').next())
+                            .unwrap_or("")
+                            .trim();
+                        // 混淆名
+                        let obfuscated = parts_by_space.get(3).unwrap_or(&"").trim();
+
+                        // 返回类型
+                        let return_type = content.split(':').nth(2)
+                            .and_then(|part| part.split(' ').next())
+                            .unwrap_or("")
+                            .trim();
+
+                        // 参数
+                        let params_str = content.split('(').nth(1)
+                            .and_then(|s| s.split(')').next())
+                            .unwrap_or("");
+
+                        let parameter_types = if params_str.is_empty() {
+                            "[]".to_string() // 空的话不跑JSON了
+                        } else {
+                            let params: Vec<&str> = params_str.split(',').map(|p| p.trim()).collect();
+                            serde_json::to_string(&params)?
+                        };
+
                         let src = &current_metadata_source_file;
+
                         match state {
                             State::Class => {method_pre.execute((current_class_id, &original, &obfuscated, &return_type, &parameter_types))?;}//{conn.execute("INSERT OR REPLACE INTO vanilla_methods (class_id, original, obfuscated, return_type, parameter_types) VALUES (?1, ?2, ?3, ?4, ?5)", (current_class_id, &original, &obfuscated, &return_type, &parameter_types))?;}
                             State::Metadata => {method_meta_pre.execute((src, &original, &obfuscated, &return_type, &parameter_types))?;}//{conn.execute("INSERT OR REPLACE INTO vanilla_methods (source_file, original, obfuscated, return_type, parameter_types) VALUES (?1, ?2, ?3, ?4, ?5)", (src, &original, &obfuscated, &return_type, &parameter_types))?;}
