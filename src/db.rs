@@ -58,32 +58,31 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
 
     // fabric
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS fabric_classes (
-            id INTEGER PRIMARY KEY,
+        "CREATE TABLE IF NOT EXISTS fabric_classes_v1 (
+            class_id INTEGER PRIMARY KEY AUTOINCREMENT,
             version TEXT NOT NULL,
-            readable_class TEXT NOT NULL,
-            intermediary_class TEXT NOT NULL,
-            obf_class TEXT NOT NULL,
-            source_file TEXT
+            named TEXT NOT NULL,
+            intermediary TEXT NOT NULL,
+            official TEXT NOT NULL
         )",
         [],
     )?;
 
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS fabric_methods (
+        "CREATE TABLE IF NOT EXISTS fabric_methods_v1 (
             id INTEGER PRIMARY KEY,
             class_id INTEGER NOT NULL,
             readable_method TEXT NOT NULL,
             intermediary_method TEXT NOT NULL,
             obf_method TEXT NOT NULL,
             descriptor TEXT NOT NULL,
-            FOREIGN KEY(class_id) REFERENCES fabric_classes(id) ON DELETE CASCADE
+            FOREIGN KEY(class_id) REFERENCES fabric_classes(class_id) ON DELETE CASCADE
         )",
         [],
     )?;
 
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS fabric_fields (
+        "CREATE TABLE IF NOT EXISTS fabric_fields_v1 (
             id INTEGER PRIMARY KEY,
             class_id INTEGER NOT NULL,
             readable_field TEXT NOT NULL,
@@ -138,9 +137,9 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
     conn.execute("CREATE INDEX IF NOT EXISTS idx_vanilla_classes_obf ON vanilla_classes(obfuscated)", [])?;
     conn.execute("CREATE INDEX IF NOT EXISTS idx_vanilla_methods_obf ON vanilla_methods(obfuscated)", [])?;
 
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_classes_obf ON fabric_classes(obf_class)", [])?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_methods_obf ON fabric_methods(obf_method)", [])?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_classes_intermediary ON fabric_classes(intermediary_class)", [])?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_classes_v1_obf ON fabric_classes_v1(official)", [])?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_methods_obf ON fabric_methods_v1(obf_method)", [])?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_classes_v1_intermediary ON fabric_classes_v1(intermediary)", [])?;
 
     conn.execute("CREATE INDEX IF NOT EXISTS idx_forge_classes_obf ON forge_classes(obf_class)", [])?;
     conn.execute("CREATE INDEX IF NOT EXISTS idx_forge_methods_obf ON forge_methods(obf_method)", [])?;

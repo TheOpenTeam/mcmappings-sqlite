@@ -16,6 +16,7 @@ use log::info;
 use rusqlite::{Connection, params};
 use crate::db::create_empty_db;
 use crate::resolvers::proguard::process_proguard;
+use crate::resolvers::tiny::process_tiny;
 
 #[derive(Clone, ValueEnum)]
 pub enum MappingType {
@@ -32,7 +33,11 @@ pub(crate) fn append_mappings(inputs: Vec<String>, path: &str, version: &str) ->
     info!("Start processing mappings...");
     let start = Instant::now();
     for input in inputs {
-        line_len += process_proguard(&input, path, version)?;
+        match detect_platform(&input)? {
+            MappingType::Vanilla => {line_len += process_proguard(&input, path, version)?;}
+            MappingType::Fabric => {line_len += process_tiny(&input, path, version)?;}
+            MappingType::Forge => {}
+        }
     }
     let duration = start.elapsed().as_secs_f64();
     info!("Finished processing mappings in {:?}s\ntotal lines: {}\nspeed: {:.2} lines/s", duration, line_len, line_len as f64 / duration);

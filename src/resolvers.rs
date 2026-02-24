@@ -11,3 +11,4 @@
 /// Tiny 是Fabric的
 /// Srg/Tsrg 是Forge的
 pub mod proguard;
+pub mod tiny;
