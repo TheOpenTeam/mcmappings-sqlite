@@ -49,7 +49,10 @@ fn detect_platform(path: &str) -> anyhow::Result<MappingType> {
     // 通过文件后缀来判断
     match path {
         path if path.ends_with(".srg") || path.ends_with(".tsrg") => Ok(MappingType::Forge),
-        path if path.ends_with(".txt") || path.ends_with(".mappings") => Ok(MappingType::Vanilla),
+        path if path.ends_with(".txt") || path.ends_with(".mappings") => {
+            info!("Detected tiny v1 in {}", path);
+            Ok(MappingType::Vanilla)
+        },
         path if path.ends_with(".tiny") => Ok(MappingType::Fabric),
         _ => Err(anyhow::Error::msg(format!("Unknown mapping type while detecting {path:?}"))),
     }
