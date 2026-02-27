@@ -51,7 +51,7 @@ fn detect_platform(path: &str) -> anyhow::Result<MappingType> {
             Ok(MappingType::Forge)
         },
         path if path.ends_with(".txt") || path.ends_with(".mappings") => {
-            info!("Detected tiny v1 in {}", path);
+            info!("Detected vanilla proguard in {}", path);
             Ok(MappingType::Vanilla)
         },
         path if path.ends_with(".tiny") => Ok(MappingType::Fabric),
