@@ -9,12 +9,10 @@
 *.swo
 
 
-*.db
 *.db-journal
 *.sqlite
 *.sqlite3
-/mapping.db
-/mappings.db
+
 
 
 *.log
