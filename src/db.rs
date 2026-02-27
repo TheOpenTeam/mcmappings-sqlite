@@ -12,6 +12,7 @@ use log::{info, warn};
 use rusqlite::Connection;
 
 pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
+    let path = if path.ends_with(".db") { path } else { &(path.to_string() + ".db") };
     if Path::new(path).exists() {
         warn!("{} already exists, removed.", path);
         fs::remove_file(path)?;
