@@ -18,6 +18,7 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
     }
     let conn = Connection::open(path)?;
     conn.execute("PRAGMA foreign_keys = ON", [])?;
+    conn.execute("PRAGMA auto_vacuum = FULL", [])?;
     info!("Creating an empty database...");
     // vanilla
     conn.execute(
@@ -133,38 +134,29 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
     // forge
     conn.execute(
         "CREATE TABLE IF NOT EXISTS forge_classes (
-            id INTEGER PRIMARY KEY,
+            class_id INTEGER PRIMARY KEY AUTOINCREMENT,
             version TEXT NOT NULL,
-            readable_class TEXT NOT NULL,
-            srg_class TEXT NOT NULL,
-            obf_class TEXT NOT NULL,
-            source_file TEXT
+            srg TEXT NOT NULL,
+            named TEXT NOT NULL
         )",
         [],
     )?;
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS forge_methods (
-            id INTEGER PRIMARY KEY,
-            class_id INTEGER NOT NULL,
-            readable_method TEXT NOT NULL,
-            srg_method TEXT NOT NULL,
-            obf_method TEXT NOT NULL,
-            descriptor TEXT NOT NULL,
-            FOREIGN KEY(class_id) REFERENCES forge_classes(id) ON DELETE CASCADE
+            method_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            srg TEXT NOT NULL,
+            desc TEXT NOT NULL,
+            named TEXT NOT NULL
         )",
         [],
     )?;
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS forge_fields (
-            id INTEGER PRIMARY KEY,
-            class_id INTEGER NOT NULL,
-            readable_field TEXT NOT NULL,
-            srg_field TEXT NOT NULL,
-            obf_field TEXT NOT NULL,
-            field_type TEXT,
-            FOREIGN KEY(class_id) REFERENCES forge_classes(id) ON DELETE CASCADE
+            field_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            srg TEXT NOT NULL,
+            named TEXT NOT NULL
         )",
         [],
     )?;
@@ -181,9 +173,8 @@ pub(crate) fn create_empty_db(path: &str) -> Result<(), anyhow::Error> {
     conn.execute("CREATE INDEX IF NOT EXISTS idx_fabric_classes_v2_intermediary ON fabric_classes_v2(intermediary)", [])?;
 
 
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_forge_classes_obf ON forge_classes(obf_class)", [])?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_forge_methods_obf ON forge_methods(obf_method)", [])?;
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_forge_classes_srg ON forge_classes(srg_class)", [])?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_forge_methods_obf ON forge_methods(srg)", [])?;
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_forge_classes_srg ON forge_classes(srg)", [])?;
     info!("Database created successfully");
     Ok(())
 

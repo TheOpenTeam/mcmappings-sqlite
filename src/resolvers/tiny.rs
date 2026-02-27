@@ -47,9 +47,9 @@ fn process_tiny_v1(lines: Vec<&str>, db: &str, version: &str) -> anyhow::Result<
     conn.execute("PRAGMA reverse_unordered_selects = 1", [])?;
     conn.execute("PRAGMA temp_store = MEMORY", [])?;
     conn.execute("BEGIN TRANSACTION", [])?;
-    let mut class_pre = conn.prepare("INSERT OR REPLACE INTO fabric_classes_v1 (version, official, named, intermediary) VALUES (?1, ?2, ?3, ?4)")?;
-    let mut method_pre = conn.prepare("INSERT OR REPLACE INTO fabric_methods_v1 (class_id, parent_class, desc, official, named, intermediary) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")?;
-    let mut field_pre = conn.prepare("INSERT OR REPLACE INTO fabric_fields_v1 (class_id, parent_class, field_type, official, named, intermediary) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")?;
+    let mut class_pre = conn.prepare_cached("INSERT OR REPLACE INTO fabric_classes_v1 (version, official, named, intermediary) VALUES (?1, ?2, ?3, ?4)")?;
+    let mut method_pre = conn.prepare_cached("INSERT OR REPLACE INTO fabric_methods_v1 (class_id, parent_class, desc, official, named, intermediary) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")?;
+    let mut field_pre = conn.prepare_cached("INSERT OR REPLACE INTO fabric_fields_v1 (class_id, parent_class, field_type, official, named, intermediary) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")?;
     let mut named_index = 0;
     let mut intermediary_index = 0;
     let mut state: Option<i64> = None; // 存储类ID
@@ -110,10 +110,10 @@ fn process_tiny_v2(lines: Vec<&str>, db: &str, version: &str) -> anyhow::Result<
     conn.execute("PRAGMA reverse_unordered_selects = 1", [])?;
     conn.execute("PRAGMA temp_store = MEMORY", [])?;
     conn.execute("BEGIN TRANSACTION", [])?;
-    let mut class_pre = conn.prepare("INSERT OR REPLACE INTO fabric_classes_v2 (version, intermediary, named) VALUES (?1, ?2, ?3)")?;
-    let mut field_pre = conn.prepare("INSERT OR REPLACE INTO fabric_fields_v2 (class_id, field_type, intermediary, named) VALUES (?1, ?2, ?3, ?4)")?;
-    let mut method_pre = conn.prepare("INSERT OR REPLACE INTO fabric_methods_v2 (class_id, desc, intermediary, named) VALUES (?1, ?2, ?3, ?4)")?;
-    let mut parameter_pre = conn.prepare(
+    let mut class_pre = conn.prepare_cached("INSERT OR REPLACE INTO fabric_classes_v2 (version, intermediary, named) VALUES (?1, ?2, ?3)")?;
+    let mut field_pre = conn.prepare_cached("INSERT OR REPLACE INTO fabric_fields_v2 (class_id, field_type, intermediary, named) VALUES (?1, ?2, ?3, ?4)")?;
+    let mut method_pre = conn.prepare_cached("INSERT OR REPLACE INTO fabric_methods_v2 (class_id, desc, intermediary, named) VALUES (?1, ?2, ?3, ?4)")?;
+    let mut parameter_pre = conn.prepare_cached(
         "UPDATE fabric_methods_v2
         SET parameters = ?2
         WHERE method_id = ?1")?;

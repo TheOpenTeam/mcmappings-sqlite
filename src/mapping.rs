@@ -9,13 +9,11 @@
 use clap::ValueEnum;
 use std::{fs, fs::File, path};
 use std::time::Instant;
-use std::collections::HashMap;
-use std::io::{BufRead, BufReader};
 use std::path::Path;
 use log::{info, warn};
-use rusqlite::{Connection, params};
 use crate::db::create_empty_db;
 use crate::resolvers::proguard::process_proguard;
+use crate::resolvers::srg::process_srg;
 use crate::resolvers::tiny::process_tiny;
 
 #[derive(Clone, ValueEnum)]
@@ -36,7 +34,7 @@ pub(crate) fn append_mappings(inputs: Vec<String>, path: &str, version: &str) ->
         match detect_platform(&input)? {
             MappingType::Vanilla => {line_len += process_proguard(&input, path, version)?;}
             MappingType::Fabric => {line_len += process_tiny(&input, path, version)?;}
-            MappingType::Forge => {}
+            MappingType::Forge => {line_len += process_srg(&input, path, version)?;}
         }
     }
     let duration = start.elapsed().as_secs_f64();
@@ -48,7 +46,10 @@ pub(crate) fn append_mappings(inputs: Vec<String>, path: &str, version: &str) ->
 fn detect_platform(path: &str) -> anyhow::Result<MappingType> {
     // 通过文件后缀来判断
     match path {
-        path if path.ends_with(".srg") || path.ends_with(".tsrg") => Ok(MappingType::Forge),
+        path if path.ends_with(".srg") || path.ends_with(".tsrg") => {
+            info!("Detected forge srg in {}", path);
+            Ok(MappingType::Forge)
+        },
         path if path.ends_with(".txt") || path.ends_with(".mappings") => {
             info!("Detected tiny v1 in {}", path);
             Ok(MappingType::Vanilla)

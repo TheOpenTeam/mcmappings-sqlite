@@ -12,3 +12,4 @@
 /// Srg/Tsrg 是Forge的
 pub mod proguard;
 pub mod tiny;
+pub mod srg;

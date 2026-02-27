@@ -28,10 +28,10 @@ pub fn process_proguard(path: &str, db: &str, version: &str) -> anyhow::Result<u
     conn.execute("PRAGMA temp_store = MEMORY", [])?;
     conn.execute("BEGIN TRANSACTION", [])?;
     // 预编译
-    let mut class_pre = conn.prepare("INSERT OR REPLACE INTO vanilla_classes (version, original, obfuscated) VALUES (?1, ?2, ?3)")?;
-    let mut method_pre = conn.prepare("INSERT OR REPLACE INTO vanilla_methods (class_id, original, obfuscated, return_type, parameter_types) VALUES (?1, ?2, ?3, ?4, ?5)")?;
-    let mut method_meta_pre = conn.prepare("INSERT OR REPLACE INTO vanilla_methods (source_file, original, obfuscated, return_type, parameter_types) VALUES (?1, ?2, ?3, ?4, ?5)")?;
-    let mut field_pre = conn.prepare("INSERT OR REPLACE INTO vanilla_fields (class_id, original, obfuscated, field_type) VALUES (?1, ?2, ?3, ?4)")?;
+    let mut class_pre = conn.prepare_cached("INSERT OR REPLACE INTO vanilla_classes (version, original, obfuscated) VALUES (?1, ?2, ?3)")?;
+    let mut method_pre = conn.prepare_cached("INSERT OR REPLACE INTO vanilla_methods (class_id, original, obfuscated, return_type, parameter_types) VALUES (?1, ?2, ?3, ?4, ?5)")?;
+    let mut method_meta_pre = conn.prepare_cached("INSERT OR REPLACE INTO vanilla_methods (source_file, original, obfuscated, return_type, parameter_types) VALUES (?1, ?2, ?3, ?4, ?5)")?;
+    let mut field_pre = conn.prepare_cached("INSERT OR REPLACE INTO vanilla_fields (class_id, original, obfuscated, field_type) VALUES (?1, ?2, ?3, ?4)")?;
 
     let file = fs::read_to_string(path)?;
     let lines: Vec<&str> = file.lines().skip(1).collect();
